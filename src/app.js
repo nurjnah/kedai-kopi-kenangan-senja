@@ -88,13 +88,26 @@ form.addEventListener("keyup", function () {
 });
 
 // kirim data ketika tombol checkout diklik
-checkoutButton.addEventListener("click", function (e) {
+checkoutButton.addEventListener("click", async function (e) {
   e.preventDefault();
   const formData = new FormData(form);
   const data = new URLSearchParams(formData);
   const objData = Object.fromEntries(data);
-  const massage = formatMassage(objData);
-  window.open('http://wa.me/6281244987218?text=' + encodeURIComponent(massage))
+  // const massage = formatMassage(objData);
+  // window.open('http://wa.me/6281244987218?text=' + encodeURIComponent(massage))
+
+  // minta transaction token ajax / fetch
+  try {
+    const response = await fetch("php/place0rder", {
+      method: "POST",
+      body: data,
+    });
+    const token = await response.text();
+    // console.log(token);
+    window.snap.pay("token");
+  } catch (err) {
+    console.log(err.massage);
+  }
 });
 
 // format pesan whatsapp
@@ -104,7 +117,9 @@ const formatMassage = (obj) => {
     Email: ${obj.email}
     No HP: ${obj.phone}
 Data Pesanan
-  ${JSON.parse(obj.items).map((item) => `${item.name} (${item.quantity} x ${rupiah(item.total)}) \n`)}
+  ${JSON.parse(obj.items).map(
+    (item) => `${item.name} (${item.quantity} x ${rupiah(item.total)}) \n`
+  )}
 TOTAL: ${rupiah(obj.total)}
 Terima kasih.`;
 };
